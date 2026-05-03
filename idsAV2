@@ -1,92 +1,92 @@
--- [[ CUBNIT OMNI - BANCO DE DADOS E ÁREA DE TRANSFERÊNCIA v29.0 ]] --
+-- [[ CUBNIT OMNI - DATABASE & CLIPBOARD v29.0 ]] --
 -- Versão: Correção de Proporção (Anti-Stretch) + Launcher Minimalista
 
-Jogadores locais = jogo:ObterServiço("Jogadores")
+local Players = game:GetService("Players")
 local Marketplace = game:GetService("MarketplaceService")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-LP local = Players.LocalPlayer
+local LP = Players.LocalPlayer
 local PG = LP:WaitForChild("PlayerGui")
 
--- === CONFIGURAÇÃO DE REMOTOS === --
-locais remotos = {
-    Wear = ReplicatedStorage:FindFirstChild("WearAcc") ou ReplicatedStorage:FindFirstChild("WearAccessory") ou ReplicatedStorage:FindFirstChild("ApplyAsset"),
+-- === CONFIGURAÇÃO DE REMOTES === --
+local Remotes = {
+    Wear = ReplicatedStorage:FindFirstChild("WearAcc") or ReplicatedStorage:FindFirstChild("WearAccessory") or ReplicatedStorage:FindFirstChild("ApplyAsset"),
     ChangeBody = ReplicatedStorage:FindFirstChild("ChangeCharacterBody"),
     ChangeColor = ReplicatedStorage:FindFirstChild("ChangeBodyColor")
 }
 
 -- Limpeza de segurança para evitar duplicatas
-se PG:FindFirstChild("CubnitOmni_Final") então PG.CubnitOmni_Final:Destroy() fim
+if PG:FindFirstChild("CubnitOmni_Final") then PG.CubnitOmni_Final:Destroy() end
 
 -- === CRIAÇÃO DO SCREEN GUI === --
 local sg = Instance.new("ScreenGui")
 sg.Name = "CubnitOmni_Final"
-sg.ResetOnSpawn = falso
+sg.ResetOnSpawn = false
 sg.IgnoreGuiInset = true
-sg.DisplayOrder = 999
+sg.DisplayOrder = 999 
 sg.Parent = PG
 
--- Variáveis ​​de controle
-local currentId = nulo
-tipoAtualLocal = nulo
-local isBodyPart = falso
+-- Variáveis de controle
+local currentId = nil
+local currentType = nil
+local isBodyPart = false
 
 -- === BOTÃO DE LANÇAMENTO (PROPORÇÃO CORRIGIDA) === --
 local launcher = Instance.new("ImageButton")
 launcher.Name = "Launcher"
-launcher.Size = UDim2.new(0, 70, 0, 70) -- Tamanho equilibrado
+launcher.Size = UDim2.new(0, 80, 0, 80) -- Tamanho equilibrado
 launcher.Position = UDim2.new(0.05, 0, 0.4, 0)
 launcher.AnchorPoint = Vector2.new(0.5, 0.5) -- Centraliza o eixo para rotação/escala
-launcher.BackgroundTransparency = 1
-launcher.Image = "rbxassetid://88903575940312"
-launcher.ScaleType = Enum.ScaleType.Fit -- ESSENCIAL: Manter a imagem sem achar
-launcher.BorderSizePixel = 0
+launcher.BackgroundTransparency = 1 
+launcher.Image = "rbxassetid://88903575940312" 
+launcher.ScaleType = Enum.ScaleType.Fit -- ESSENCIAL: Mantém a imagem sem achatar
+launcher.BorderSizePixel = 0 
 launcher.ZIndex = 1000
 launcher.Parent = sg
 
 -- Arrastar (Otimizado para Mobile)
-local dStart, sPos, arrastando
+local dStart, sPos, dragging
 launcher.InputBegan:Connect(function(i)
-    Se i.UserInputType == Enum.UserInputType.MouseButton1 ou i.UserInputType == Enum.UserInputType.Touch então
-        arrastando = verdadeiro; dInício = i.Posição; sPos = launcher.Position
-    fim
-fim)
+    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+        dragging = true; dStart = i.Position; sPos = launcher.Position
+    end
+end)
 UserInputService.InputChanged:Connect(function(i)
-    se arrastar e (i.UserInputType == Enum.UserInputType.MouseMovement ou i.UserInputType == Enum.UserInputType.Touch) então
-        delta local = i.Posição - dInício
+    if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+        local delta = i.Position - dStart
         launcher.Position = UDim2.new(sPos.X.Scale, sPos.X.Offset + delta.X, sPos.Y.Scale, sPos.Y.Offset + delta.Y)
-    fim
-fim)
+    end
+end)
 launcher.InputEnded:Connect(function() dragging = false end)
 
--- === PRINCIPAL DA INTERFACE === --
+-- === INTERFACE PRINCIPAL === --
 local main = Instance.new("Frame")
 main.Name = "MainFrame"
 main.Size = UDim2.new(0, 380, 0, 320)
 main.Position = UDim2.new(0.5, -190, 0.5, -160)
 main.BackgroundColor3 = Color3.fromRGB(10, 11, 13)
 main.BorderSizePixel = 0
-principal.Visível = falso
+main.Visible = false
 main.ZIndex = 100
-principal.Pai = sg
+main.Parent = sg
 Instance.new("UICorner", main)
 
-cabeçalho local = Instance.new("Frame", main)
+local header = Instance.new("Frame", main)
 header.Size = UDim2.new(1, 0, 0, 40)
-cabeçalho.CorDeFundo3 = Cor3.fromRGB(20, 21, 24)
+header.BackgroundColor3 = Color3.fromRGB(20, 21, 24)
 header.ZIndex = 101
-Instância.new("UICorner", cabeçalho)
+Instance.new("UICorner", header)
 
-título local = Instance.new("TextLabel", cabeçalho)
-título.Tamanho = UDim2.novo(1, -80, 1, 0)
-título.Posição = UDim2.new(0, 15, 0, 0)
-title.Text = "INSPECIONAR AVATAR V1 SpawnCUB"
+local title = Instance.new("TextLabel", header)
+title.Size = UDim2.new(1, -80, 1, 0)
+title.Position = UDim2.new(0, 15, 0, 0)
+title.Text = "CUBNIT OMNI DATABASE"
 title.TextColor3 = Color3.fromRGB(0, 255, 100)
-título.Fonte = Enum.Fonte.GothamBold
-título.TamanhoDoTexto = 14
-título.TextXAlignment = Enum.TextXAlignment.Left
-título.TransparênciaDeFundo = 1
-título.ZIndex = 102
+title.Font = Enum.Font.GothamBold
+title.TextSize = 14
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.BackgroundTransparency = 1
+title.ZIndex = 102
 
 -- BOTÃO DE FECHAR (X)
 local closeButton = Instance.new("TextButton", header)
@@ -98,13 +98,13 @@ closeButton.TextColor3 = Color3.fromRGB(255, 50, 50)
 closeButton.Font = Enum.Font.GothamBold
 closeButton.TextSize = 18
 closeButton.ZIndex = 103
-Instância.new("UICorner", closeButton)
+Instance.new("UICorner", closeButton)
 
 closeButton.MouseButton1Click:Connect(function()
-    sg:Destruir()
-fim)
+    sg:Destroy() 
+end)
 
---Páginas (LISTA DE JOGADORES)
+-- Páginas (LISTA DE JOGADORES)
 local listPage = Instance.new("ScrollingFrame", main)
 listPage.Size = UDim2.new(1, -20, 1, -60)
 listPage.Position = UDim2.new(0, 10, 0, 50)
@@ -148,7 +148,7 @@ confirmGui.Position = UDim2.new(0.5, -120, 0.5, -90)
 confirmGui.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 confirmGui.BorderSizePixel = 0
 confirmGui.Visible = false
-confirmGui.ZIndex = 2000
+confirmGui.ZIndex = 2000 
 confirmGui.Parent = sg
 
 Instance.new("UICorner", confirmGui)
@@ -159,7 +159,7 @@ cStroke.Thickness = 3
 local cMsg = Instance.new("TextLabel")
 cMsg.Size = UDim2.new(1, -20, 0, 60)
 cMsg.Position = UDim2.new(0, 10, 0, 10)
-cMsg.Text = "Copiando ID para o clipe"
+cMsg.Text = "Copiando ID para o Clip"
 cMsg.TextColor3 = Color3.new(1, 1, 1)
 cMsg.Font = Enum.Font.GothamBold
 cMsg.TextSize = 16
@@ -184,23 +184,23 @@ cancelBtn.Size = UDim2.new(0, 200, 0, 40)
 cancelBtn.Position = UDim2.new(0.5, -100, 0, 130)
 cancelBtn.BackgroundColor3 = Color3.fromRGB(5, 5, 5)
 cancelBtn.Text = "CANCELAR"
-cancelarBtn.TextColor3 = Color3.fromRGB(200, 0, 0)
+cancelBtn.TextColor3 = Color3.fromRGB(200, 0, 0)
 cancelBtn.Font = Enum.Font.GothamBold
 cancelBtn.TextSize = 22
 cancelBtn.ZIndex = 2002
 cancelBtn.Parent = confirmGui
 Instance.new("UICorner", cancelBtn)
 
--- === LÓGICA DE CARTÕES === --
+-- === LÓGICA DE CARDS === --
 
-função local criarCartão(id, nomeDefinido, éCorpo)
-    Se não houver id ou id == 0 ou id == "" então retorne fim
+local function createCard(id, defName, isBody)
+    if not id or id == 0 or id == "" then return end
 
     local card = Instance.new("TextButton", gridScroll)
     card.BackgroundColor3 = Color3.fromRGB(22, 23, 27)
     card.Text = ""
     card.ZIndex = 104
-    Instância.new("UICorner", cartão)
+    Instance.new("UICorner", card)
 
     local img = Instance.new("ImageLabel", card)
     img.Size = UDim2.new(1, -10, 0, 65)
@@ -219,68 +219,68 @@ função local criarCartão(id, nomeDefinido, éCorpo)
     t.BackgroundTransparency = 1
     t.ZIndex = 105
 
-    tarefa.spawn(função()
+    task.spawn(function()
         local s, info = pcall(function() return Marketplace:GetProductInfo(id) end)
-        t.Text = (s e info) e info.Name ou defName
-    fim)
+        t.Text = (s and info) and info.Name or defName
+    end)
 
     card.MouseButton1Click:Connect(function()
         currentId = id
         currentType = defName
-        isBodyPart = isBody ou falso
-        cMsg.Text = "Copiar ID de: " .. (isBody e "CORPO" ou "ITEM")
+        isBodyPart = isBody or false
+        cMsg.Text = "Copiar ID de: " .. (isBody and "CORPO" or "ITEM")
         confirmGui.Visible = true
-    fim)
-fim
+    end)
+end
 
 -- === FUNÇÃO DE CONFIRMAR - CÓPIA PARA CLIPE === --
 confirmBtn.MouseButton1Click:Connect(function()
-    Se não for currentId, retorne end.
-    sucesso local = pcall(função()
-        se setclipboard então setclipboard(tostring(currentId)) fim
-    fim)
-    se for bem-sucedido, então
+    if not currentId then return end
+    local success = pcall(function()
+        if setclipboard then setclipboard(tostring(currentId)) end
+    end)
+    if success then
         confirmBtn.Text = "COPIADO!"
-        tarefa.esperar(1)
+        task.wait(1)
         confirmBtn.Text = "COPIAR ID"
-    fim
+    end
     confirmGui.Visible = false
-fim)
+end)
 
 cancelBtn.MouseButton1Click:Connect(function()
     confirmGui.Visible = false
-fim)
+end)
 
 -- === FUNÇÃO DE INSPEÇÃO === --
-função local inspect(alvo)
+local function inspect(target)
     listPage.Visible = false
     detailPage.Visible = true
-    título.Texto = "INVERTENDO: " .. target.Name:upper()
+    title.Text = "REVERSING: " .. target.Name:upper()
 
-    para _, v em pares(gridScroll:GetChildren()) faça
-        se v:IsA("TextButton") então v:Destroy() fim
-    fim
+    for _, v in pairs(gridScroll:GetChildren()) do 
+        if v:IsA("TextButton") then v:Destroy() end 
+    end
 
-    caractere local = alvo.Caractere
-    se char então
+    local char = target.Character
+    if char then
         local hum = char:FindFirstChildOfClass("Humanoid")
-        se zumbir então
+        if hum then
             local s, d = pcall(function() return hum:GetAppliedDescription() end)
-            se s e d então
-                criarCartão(d.Camisa, "Camisa")
-                criarCartão(d.Calças, "Calça")
-                criarCartão(d.Face, "Rosto")
-                partes do corpo local = {
-                    {d.Cabeça, "Cabeça"}, {d.Torso, "Torso"},
-                    {d.LeftArm, "Braço E."}, {d.RightArm, "Braço D."},
+            if s and d then
+                createCard(d.Shirt, "Camisa")
+                createCard(d.Pants, "Calça")
+                createCard(d.Face, "Rosto")
+                local bodyParts = {
+                    {d.Head, "Cabeça"}, {d.Torso, "Torso"}, 
+                    {d.LeftArm, "Braço E."}, {d.RightArm, "Braço D."}, 
                     {d.LeftLeg, "Perna E."}, {d.RightLeg, "Perna D."}
                 }
-                para _, b em ipairs(bodyParts) faça createCard(b[1], b[2], true) fim
-                para _, a em ipairs(d:GetAccessories(true)) faça createCard(a.AssetId, "Acessório") fim
-            fim
-        fim
-    fim
-fim
+                for _, b in ipairs(bodyParts) do createCard(b[1], b[2], true) end
+                for _, a in ipairs(d:GetAccessories(true)) do createCard(a.AssetId, "Acessório") end
+            end
+        end
+    end
+end
 
 -- Botão Voltar
 local bk = Instance.new("TextButton", detailPage)
@@ -293,45 +293,45 @@ bk.Font = Enum.Font.Gotham
 bk.ZIndex = 110
 Instance.new("UICorner", bk)
 
-bk.MouseButton1Click:Connect(function()
-    detailPage.Visible = false
-    listPage.Visible = true
-    title.Text = "INSPECIONAR AVATAR V1 SpawnCUB"
-fim)
+bk.MouseButton1Click:Connect(function() 
+    detailPage.Visible = false 
+    listPage.Visible = true 
+    title.Text = "CUBNIT OMNI DATABASE" 
+end)
 
 -- === ATUALIZAÇÃO DA LISTA DE JOGADORES === --
-função local updateList()
-    para _, v em pares(listPage:GetChildren()) faça se v:IsA("TextButton") então v:Destroy() fim fim
+local function updateList()
+    for _, v in pairs(listPage:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
     local allPlayers = Players:GetPlayers()
-    tabela.ordenar(todosOsJogadores, função(a, b)
-        se a == LP então retorne verdadeiro fim
-        se b == LP então retorne falso fim
-        retornar a.Nome:minúsculo() < b.Nome:minúsculo()
-    fim)
-    para _, p em pares(todosOsJogadores) faça
+    table.sort(allPlayers, function(a, b) 
+        if a == LP then return true end
+        if b == LP then return false end
+        return a.Name:lower() < b.Name:lower() 
+    end)
+    for _, p in pairs(allPlayers) do
         local b = Instance.new("TextButton", listPage)
         b.Size = UDim2.new(1, -8, 0, 35)
-        b.BackgroundColor3 = (p == LP) e Color3.fromRGB(30, 60, 30) ou Color3.fromRGB(22, 23, 27)
-        local displayName = (p == LP) e " [VOCÊ] " .. p.DisplayName ou " " .. p.DisplayName
-        b.Text = displayName .. " (@" .. p.Nome .. ")"
-        b.TextColor3 = (p == LP) e Color3.fromRGB(0, 255, 150) ou Color3.new(1, 1, 1)
+        b.BackgroundColor3 = (p == LP) and Color3.fromRGB(30, 60, 30) or Color3.fromRGB(22, 23, 27)
+        local displayName = (p == LP) and " [VOCÊ] " .. p.DisplayName or "  " .. p.DisplayName
+        b.Text = displayName .. " (@" .. p.Name .. ")"
+        b.TextColor3 = (p == LP) and Color3.fromRGB(0, 255, 150) or Color3.new(1, 1, 1)
         b.TextXAlignment = Enum.TextXAlignment.Left
-        b.Font = (p == LP) e Enum.Font.GothamBold ou Enum.Font.Gotham
+        b.Font = (p == LP) and Enum.Font.GothamBold or Enum.Font.Gotham
         b.ZIndex = 105
-        Instância.new("UICorner", b)
+        Instance.new("UICorner", b)
         b.MouseButton1Click:Connect(function() inspect(p) end)
-    fim
-fim
+    end
+end
 
--- Monitorar
-Jogadores.JogadorAdicionado:Conectar(função() se principal.Visível então atualizarLista() fim fim)
-Jogadores.RemovendoJogador:Conectar(função() se principal.Visível então atualizarLista() fim fim)
+-- Monitorar jogadores
+Players.PlayerAdded:Connect(function() if main.Visible then updateList() end end)
+Players.PlayerRemoving:Connect(function() if main.Visible then updateList() end end)
 
 -- Abrir/Fechar
 launcher.MouseButton1Click:Connect(function()
-    main.Visible = não main.Visible
-    se main.Visible então updateList() fim
+    main.Visible = not main.Visible
+    if main.Visible then updateList() end
     confirmGui.Visible = false
-fim)
+end)
 
-print("CUBNIT OMNI v29.0 Carregado - Proporções Fixas")
+print("CUBNIT OMNI v29.0 Loaded - Fixed Proportions")
