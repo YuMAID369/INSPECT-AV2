@@ -1,0 +1,337 @@
+-- [[ CUBNIT OMNI - BANCO DE DADOS E ÁREA DE TRANSFERÊNCIA v29.0 ]] --
+-- Versão: Correção de Proporção (Anti-Stretch) + Launcher Minimalista
+
+Jogadores locais = jogo:ObterServiço("Jogadores")
+local Marketplace = game:GetService("MarketplaceService")
+local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+LP local = Players.LocalPlayer
+local PG = LP:WaitForChild("PlayerGui")
+
+-- === CONFIGURAÇÃO DE REMOTOS === --
+locais remotos = {
+    Wear = ReplicatedStorage:FindFirstChild("WearAcc") ou ReplicatedStorage:FindFirstChild("WearAccessory") ou ReplicatedStorage:FindFirstChild("ApplyAsset"),
+    ChangeBody = ReplicatedStorage:FindFirstChild("ChangeCharacterBody"),
+    ChangeColor = ReplicatedStorage:FindFirstChild("ChangeBodyColor")
+}
+
+-- Limpeza de segurança para evitar duplicatas
+se PG:FindFirstChild("CubnitOmni_Final") então PG.CubnitOmni_Final:Destroy() fim
+
+-- === CRIAÇÃO DO SCREEN GUI === --
+local sg = Instance.new("ScreenGui")
+sg.Name = "CubnitOmni_Final"
+sg.ResetOnSpawn = falso
+sg.IgnoreGuiInset = true
+sg.DisplayOrder = 999
+sg.Parent = PG
+
+-- Variáveis ​​de controle
+local currentId = nulo
+tipoAtualLocal = nulo
+local isBodyPart = falso
+
+-- === BOTÃO DE LANÇAMENTO (PROPORÇÃO CORRIGIDA) === --
+local launcher = Instance.new("ImageButton")
+launcher.Name = "Launcher"
+launcher.Size = UDim2.new(0, 70, 0, 70) -- Tamanho equilibrado
+launcher.Position = UDim2.new(0.05, 0, 0.4, 0)
+launcher.AnchorPoint = Vector2.new(0.5, 0.5) -- Centraliza o eixo para rotação/escala
+launcher.BackgroundTransparency = 1
+launcher.Image = "rbxassetid://88903575940312"
+launcher.ScaleType = Enum.ScaleType.Fit -- ESSENCIAL: Manter a imagem sem achar
+launcher.BorderSizePixel = 0
+launcher.ZIndex = 1000
+launcher.Parent = sg
+
+-- Arrastar (Otimizado para Mobile)
+local dStart, sPos, arrastando
+launcher.InputBegan:Connect(function(i)
+    Se i.UserInputType == Enum.UserInputType.MouseButton1 ou i.UserInputType == Enum.UserInputType.Touch então
+        arrastando = verdadeiro; dInício = i.Posição; sPos = launcher.Position
+    fim
+fim)
+UserInputService.InputChanged:Connect(function(i)
+    se arrastar e (i.UserInputType == Enum.UserInputType.MouseMovement ou i.UserInputType == Enum.UserInputType.Touch) então
+        delta local = i.Posição - dInício
+        launcher.Position = UDim2.new(sPos.X.Scale, sPos.X.Offset + delta.X, sPos.Y.Scale, sPos.Y.Offset + delta.Y)
+    fim
+fim)
+launcher.InputEnded:Connect(function() dragging = false end)
+
+-- === PRINCIPAL DA INTERFACE === --
+local main = Instance.new("Frame")
+main.Name = "MainFrame"
+main.Size = UDim2.new(0, 380, 0, 320)
+main.Position = UDim2.new(0.5, -190, 0.5, -160)
+main.BackgroundColor3 = Color3.fromRGB(10, 11, 13)
+main.BorderSizePixel = 0
+principal.Visível = falso
+main.ZIndex = 100
+principal.Pai = sg
+Instance.new("UICorner", main)
+
+cabeçalho local = Instance.new("Frame", main)
+header.Size = UDim2.new(1, 0, 0, 40)
+cabeçalho.CorDeFundo3 = Cor3.fromRGB(20, 21, 24)
+header.ZIndex = 101
+Instância.new("UICorner", cabeçalho)
+
+título local = Instance.new("TextLabel", cabeçalho)
+título.Tamanho = UDim2.novo(1, -80, 1, 0)
+título.Posição = UDim2.new(0, 15, 0, 0)
+title.Text = "INSPECIONAR AVATAR V1 SpawnCUB"
+title.TextColor3 = Color3.fromRGB(0, 255, 100)
+título.Fonte = Enum.Fonte.GothamBold
+título.TamanhoDoTexto = 14
+título.TextXAlignment = Enum.TextXAlignment.Left
+título.TransparênciaDeFundo = 1
+título.ZIndex = 102
+
+-- BOTÃO DE FECHAR (X)
+local closeButton = Instance.new("TextButton", header)
+closeButton.Size = UDim2.new(0, 30, 0, 30)
+closeButton.Position = UDim2.new(1, -35, 0, 5)
+closeButton.BackgroundColor3 = Color3.fromRGB(40, 10, 10)
+closeButton.Text = "X"
+closeButton.TextColor3 = Color3.fromRGB(255, 50, 50)
+closeButton.Font = Enum.Font.GothamBold
+closeButton.TextSize = 18
+closeButton.ZIndex = 103
+Instância.new("UICorner", closeButton)
+
+closeButton.MouseButton1Click:Connect(function()
+    sg:Destruir()
+fim)
+
+--Páginas (LISTA DE JOGADORES)
+local listPage = Instance.new("ScrollingFrame", main)
+listPage.Size = UDim2.new(1, -20, 1, -60)
+listPage.Position = UDim2.new(0, 10, 0, 50)
+listPage.BackgroundTransparency = 1
+listPage.ScrollBarThickness = 3
+listPage.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 100)
+listPage.ZIndex = 102
+listPage.CanvasSize = UDim2.new(0, 0, 0, 0)
+listPage.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+local listLayout = Instance.new("UIListLayout", listPage)
+listLayout.Padding = UDim.new(0, 6)
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local detailPage = Instance.new("Frame", main)
+detailPage.Size = UDim2.new(1, 0, 1, -40)
+detailPage.Position = UDim2.new(0, 0, 0, 40)
+detailPage.BackgroundTransparency = 1
+detailPage.Visible = false
+detailPage.ZIndex = 102
+
+local gridScroll = Instance.new("ScrollingFrame", detailPage)
+gridScroll.Size = UDim2.new(1, -20, 1, -55)
+gridScroll.Position = UDim2.new(0, 10, 0, 5)
+gridScroll.BackgroundTransparency = 1
+gridScroll.ScrollBarThickness = 3
+gridScroll.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 100)
+gridScroll.ZIndex = 103
+gridScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+gridScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+local gridLayout = Instance.new("UIGridLayout", gridScroll)
+gridLayout.CellSize = UDim2.new(0, 82, 0, 115)
+gridLayout.CellPadding = UDim2.new(0, 8, 0, 8)
+
+-- === INTERFACE DE CONFIRMAÇÃO === --
+local confirmGui = Instance.new("Frame")
+confirmGui.Name = "ConfirmFrame"
+confirmGui.Size = UDim2.new(0, 240, 0, 180)
+confirmGui.Position = UDim2.new(0.5, -120, 0.5, -90)
+confirmGui.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+confirmGui.BorderSizePixel = 0
+confirmGui.Visible = false
+confirmGui.ZIndex = 2000
+confirmGui.Parent = sg
+
+Instance.new("UICorner", confirmGui)
+local cStroke = Instance.new("UIStroke", confirmGui)
+cStroke.Color = Color3.fromRGB(0, 255, 100)
+cStroke.Thickness = 3
+
+local cMsg = Instance.new("TextLabel")
+cMsg.Size = UDim2.new(1, -20, 0, 60)
+cMsg.Position = UDim2.new(0, 10, 0, 10)
+cMsg.Text = "Copiando ID para o clipe"
+cMsg.TextColor3 = Color3.new(1, 1, 1)
+cMsg.Font = Enum.Font.GothamBold
+cMsg.TextSize = 16
+cMsg.BackgroundTransparency = 1
+cMsg.ZIndex = 2001
+cMsg.Parent = confirmGui
+
+local confirmBtn = Instance.new("TextButton")
+confirmBtn.Size = UDim2.new(0, 200, 0, 40)
+confirmBtn.Position = UDim2.new(0.5, -100, 0, 80)
+confirmBtn.BackgroundColor3 = Color3.fromRGB(5, 5, 5)
+confirmBtn.Text = "COPIAR ID"
+confirmBtn.TextColor3 = Color3.fromRGB(180, 255, 0)
+confirmBtn.Font = Enum.Font.GothamBold
+confirmBtn.TextSize = 22
+confirmBtn.ZIndex = 2002
+confirmBtn.Parent = confirmGui
+Instance.new("UICorner", confirmBtn)
+
+local cancelBtn = Instance.new("TextButton")
+cancelBtn.Size = UDim2.new(0, 200, 0, 40)
+cancelBtn.Position = UDim2.new(0.5, -100, 0, 130)
+cancelBtn.BackgroundColor3 = Color3.fromRGB(5, 5, 5)
+cancelBtn.Text = "CANCELAR"
+cancelarBtn.TextColor3 = Color3.fromRGB(200, 0, 0)
+cancelBtn.Font = Enum.Font.GothamBold
+cancelBtn.TextSize = 22
+cancelBtn.ZIndex = 2002
+cancelBtn.Parent = confirmGui
+Instance.new("UICorner", cancelBtn)
+
+-- === LÓGICA DE CARTÕES === --
+
+função local criarCartão(id, nomeDefinido, éCorpo)
+    Se não houver id ou id == 0 ou id == "" então retorne fim
+
+    local card = Instance.new("TextButton", gridScroll)
+    card.BackgroundColor3 = Color3.fromRGB(22, 23, 27)
+    card.Text = ""
+    card.ZIndex = 104
+    Instância.new("UICorner", cartão)
+
+    local img = Instance.new("ImageLabel", card)
+    img.Size = UDim2.new(1, -10, 0, 65)
+    img.Position = UDim2.new(0, 5, 0, 5)
+    img.BackgroundTransparency = 1
+    img.Image = "rbxthumb://type=Asset&id=" .. id .. "&w=150&h=150"
+    img.ZIndex = 105
+
+    local t = Instance.new("TextLabel", card)
+    t.Size = UDim2.new(1, -6, 0, 35)
+    t.Position = UDim2.new(0, 3, 1, -45)
+    t.Text = "..."
+    t.TextColor3 = Color3.fromRGB(200, 200, 200)
+    t.TextSize = 7
+    t.TextWrapped = true
+    t.BackgroundTransparency = 1
+    t.ZIndex = 105
+
+    tarefa.spawn(função()
+        local s, info = pcall(function() return Marketplace:GetProductInfo(id) end)
+        t.Text = (s e info) e info.Name ou defName
+    fim)
+
+    card.MouseButton1Click:Connect(function()
+        currentId = id
+        currentType = defName
+        isBodyPart = isBody ou falso
+        cMsg.Text = "Copiar ID de: " .. (isBody e "CORPO" ou "ITEM")
+        confirmGui.Visible = true
+    fim)
+fim
+
+-- === FUNÇÃO DE CONFIRMAR - CÓPIA PARA CLIPE === --
+confirmBtn.MouseButton1Click:Connect(function()
+    Se não for currentId, retorne end.
+    sucesso local = pcall(função()
+        se setclipboard então setclipboard(tostring(currentId)) fim
+    fim)
+    se for bem-sucedido, então
+        confirmBtn.Text = "COPIADO!"
+        tarefa.esperar(1)
+        confirmBtn.Text = "COPIAR ID"
+    fim
+    confirmGui.Visible = false
+fim)
+
+cancelBtn.MouseButton1Click:Connect(function()
+    confirmGui.Visible = false
+fim)
+
+-- === FUNÇÃO DE INSPEÇÃO === --
+função local inspect(alvo)
+    listPage.Visible = false
+    detailPage.Visible = true
+    título.Texto = "INVERTENDO: " .. target.Name:upper()
+
+    para _, v em pares(gridScroll:GetChildren()) faça
+        se v:IsA("TextButton") então v:Destroy() fim
+    fim
+
+    caractere local = alvo.Caractere
+    se char então
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        se zumbir então
+            local s, d = pcall(function() return hum:GetAppliedDescription() end)
+            se s e d então
+                criarCartão(d.Camisa, "Camisa")
+                criarCartão(d.Calças, "Calça")
+                criarCartão(d.Face, "Rosto")
+                partes do corpo local = {
+                    {d.Cabeça, "Cabeça"}, {d.Torso, "Torso"},
+                    {d.LeftArm, "Braço E."}, {d.RightArm, "Braço D."},
+                    {d.LeftLeg, "Perna E."}, {d.RightLeg, "Perna D."}
+                }
+                para _, b em ipairs(bodyParts) faça createCard(b[1], b[2], true) fim
+                para _, a em ipairs(d:GetAccessories(true)) faça createCard(a.AssetId, "Acessório") fim
+            fim
+        fim
+    fim
+fim
+
+-- Botão Voltar
+local bk = Instance.new("TextButton", detailPage)
+bk.Size = UDim2.new(1, -20, 0, 35)
+bk.Position = UDim2.new(0, 10, 1, -40)
+bk.BackgroundColor3 = Color3.fromRGB(30, 31, 35)
+bk.Text = "VOLTAR PARA LISTA"
+bk.TextColor3 = Color3.new(1, 1, 1)
+bk.Font = Enum.Font.Gotham
+bk.ZIndex = 110
+Instance.new("UICorner", bk)
+
+bk.MouseButton1Click:Connect(function()
+    detailPage.Visible = false
+    listPage.Visible = true
+    title.Text = "INSPECIONAR AVATAR V1 SpawnCUB"
+fim)
+
+-- === ATUALIZAÇÃO DA LISTA DE JOGADORES === --
+função local updateList()
+    para _, v em pares(listPage:GetChildren()) faça se v:IsA("TextButton") então v:Destroy() fim fim
+    local allPlayers = Players:GetPlayers()
+    tabela.ordenar(todosOsJogadores, função(a, b)
+        se a == LP então retorne verdadeiro fim
+        se b == LP então retorne falso fim
+        retornar a.Nome:minúsculo() < b.Nome:minúsculo()
+    fim)
+    para _, p em pares(todosOsJogadores) faça
+        local b = Instance.new("TextButton", listPage)
+        b.Size = UDim2.new(1, -8, 0, 35)
+        b.BackgroundColor3 = (p == LP) e Color3.fromRGB(30, 60, 30) ou Color3.fromRGB(22, 23, 27)
+        local displayName = (p == LP) e " [VOCÊ] " .. p.DisplayName ou " " .. p.DisplayName
+        b.Text = displayName .. " (@" .. p.Nome .. ")"
+        b.TextColor3 = (p == LP) e Color3.fromRGB(0, 255, 150) ou Color3.new(1, 1, 1)
+        b.TextXAlignment = Enum.TextXAlignment.Left
+        b.Font = (p == LP) e Enum.Font.GothamBold ou Enum.Font.Gotham
+        b.ZIndex = 105
+        Instância.new("UICorner", b)
+        b.MouseButton1Click:Connect(function() inspect(p) end)
+    fim
+fim
+
+-- Monitorar
+Jogadores.JogadorAdicionado:Conectar(função() se principal.Visível então atualizarLista() fim fim)
+Jogadores.RemovendoJogador:Conectar(função() se principal.Visível então atualizarLista() fim fim)
+
+-- Abrir/Fechar
+launcher.MouseButton1Click:Connect(function()
+    main.Visible = não main.Visible
+    se main.Visible então updateList() fim
+    confirmGui.Visible = false
+fim)
+
+print("CUBNIT OMNI v29.0 Carregado - Proporções Fixas")
